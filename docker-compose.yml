@@ -1,0 +1,13 @@
+version: '3.5'
+
+services:
+  cbrw_php:
+    hostname: cbrw_php
+    container_name: cbrw_php
+    build:
+      context: ./
+      dockerfile: php.Dockerfile
+    volumes:
+      - ./:/var/www
+      - ./var/tmp:/tmp
+      - ./var:/var/www/var

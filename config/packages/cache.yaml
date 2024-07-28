@@ -1,5 +1,14 @@
 framework:
     cache:
+        pools:
+            rates.cache:
+                default_lifetime: 15552000 #180days
+                adapter: cache.adapter.redis
+                provider: app.redis
+            ticker.cache:
+                adapter: cache.adapter.redis
+                provider: app.redis
+
         # Unique name of your app: used to compute stable namespaces for cache keys.
         #prefix_seed: your_vendor_name/app_name
 

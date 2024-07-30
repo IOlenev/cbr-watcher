@@ -6,9 +6,13 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     libzip-dev \
     zlib1g-dev \
+    librabbitmq-dev \
+    libssl-dev \
     bash
 
 RUN docker-php-ext-install intl opcache pdo pdo_mysql \
+    && pecl install amqp \
+    && docker-php-ext-enable amqp \
     && pecl install apcu \
     && docker-php-ext-enable apcu \
     && pecl install redis \

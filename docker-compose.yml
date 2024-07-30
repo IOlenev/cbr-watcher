@@ -1,37 +1,36 @@
-version: '3.7'
+version: "3.5"
 
 networks:
   cbrw:
-#    driver: bridge
-#    name: cbrw
-#    ipam:
-#      driver: default
-#      config:
-#        - subnet: 192.168.220.0/24
+    driver: bridge
+    name: cbrw
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.220.0/24
 
 services:
-  cbrw_web:
-#    hostname: cbrw_web
-    container_name: cbrw_web
+  cbrw-web:
+    hostname: cbrw-web
+    container_name: cbrw-web
     image: nginx:latest
     ports:
-      - "80:80"
+      - "8800:80"
       - "443:443"
     volumes:
       - ./hosts:/etc/nginx/conf.d
-      - ./public:/var/www
+      - ./:/var/www
       - ./var/log/nginx:/var/log/nginx
     links:
-      - cbrw_php
+      - cbrw-php
     extra_hosts:
       - "cbrw:127.0.0.1"
     networks:
       - cbrw
-#      - cbr-watcher_default
 
-  cbrw_php:
-#    hostname: cbrw_php
-    container_name: cbrw_php
+  cbrw-php:
+    hostname: cbrw-php
+    container_name: cbrw-php
     restart: always
     build:
       context: ./
@@ -50,12 +49,11 @@ services:
       XDEBUG_CONFIG: client_port=9003 mode=debug,profile start_with_request=yes discover_client_host=false
       PHP_IDE_CONFIG: serverName=Docker
       REDIS_HOST: redis
-      REDIS_PORT: 6400
+      REDIS_PORT: 6379
     links:
       - redis
     networks:
       - cbrw
-#      - cbr-watcher_default
 
   redis:
     container_name: redis
@@ -63,8 +61,9 @@ services:
       context: ./redis
       dockerfile: Dockerfile
     restart: always
+#    expose:
+#      - 6379
     ports:
-      - 6400:6379
+      - "6379:6379"
     networks:
       - cbrw
-#      - cbr-watcher_default

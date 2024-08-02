@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "91068b3688b4fdbae1d545cf1f8e116c",
+    "content-hash": "581de672df51d9146ae4da814518a96a",
     "packages": [
         {
             "name": "psr/cache",
@@ -4696,6 +4696,7 @@
         "ext-sockets": "*",
         "ext-libxml": "*",
         "ext-openssl": "*",
+        "ext-simplexml": "*",
         "ext-xml": "*",
         "ext-xmlwriter": "*",
         "ext-zend-opcache": "*",

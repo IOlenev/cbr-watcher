@@ -7,13 +7,10 @@ parameters:
     days_date_range: 180
 
 services:
-    # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
-    # makes classes in src/ available to be used as services
-    # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
         exclude:
@@ -21,15 +18,14 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
-
     app.redis:
         class: \Redis
         factory: ['Symfony\Component\Cache\Adapter\RedisAdapter', 'createConnection']
         arguments:
-            #- 'redis://172.17.0.1:6400'
-            - 'redis://redis:6379'
-            #- { retry_interval: 2, timeout: 10 }
+            - "%env(REDIS_DSN)%"
 
+    App\Service\RatesProviderInterface:
+        class: App\Service\CbrRatesProvider
 
+    App\Service\RatesParserInterface:
+        class: App\Service\CbrRatesParser

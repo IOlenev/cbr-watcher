@@ -2,8 +2,8 @@
 
 namespace App\Service;
 
+use App\Dto\DateDto;
 use DateTimeImmutable;
-use DateTimeInterface;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,25 +16,31 @@ final class CbrRatesProvider implements RatesProviderInterface
 {
     private const RATES = 'http://www.cbr.ru/scripts/XML_daily.asp';
 
-    private DateTimeImmutable $borderDate;
+    private DateDto $borderDate;
 
     public function __construct(
         readonly private HttpClientInterface $client,
         readonly private CacheInterface      $ratesCache,
         ParameterBagInterface       $params
     ) {
-        $this->borderDate = new DateTimeImmutable(sprintf('-%d day', (int)$params->get('days_date_range')));
+        $this->borderDate = DateDto::create(
+            new DateTimeImmutable(sprintf('-%d day', (int)$params->get('days_date_range')))
+        );
     }
 
-    public function getRates(DateTimeInterface $date): ?string
+    public function getRates(?DateDto $date = null): ?string
     {
-        if ($date < $this->borderDate) {
+        if (is_null($date)) {
+            $date = DateDto::create();
+        }
+
+        if (strcmp($date, $this->borderDate) < 0) {
             return null;
         }
 
         try {
             $xml = $this->ratesCache->get(
-                self::getKeyByDate($date),
+                (string)$date,
                 function (ItemInterface $item) use ($date) {
                     $response = $this->client->request(
                         'GET',
@@ -52,10 +58,5 @@ final class CbrRatesProvider implements RatesProviderInterface
         }
 
         return $xml;
-    }
-
-    private static function getKeyByDate(DateTimeInterface $date): string
-    {
-        return $date->format('Ymd');
     }
 }

@@ -2,14 +2,16 @@
 
 namespace App\Tests\Functional;
 
+use App\Dto\RatesDto;
 use App\Dto\TickerDto;
 use App\Service\RatesParserInterface;
-use DateTimeImmutable;
+use App\Service\RatesProviderInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Throwable;
 
 class RatesParserTest extends KernelTestCase
 {
+    private RatesProviderInterface $provider;
     private RatesParserInterface $parser;
 
     protected function setUp(): void
@@ -18,6 +20,7 @@ class RatesParserTest extends KernelTestCase
         self::bootKernel();
         $container = static::getContainer();
         $this->parser = $container->get(RatesParserInterface::class);
+        $this->provider = $container->get(RatesProviderInterface::class);
     }
 
     public function testTickerDto(): void
@@ -47,7 +50,9 @@ class RatesParserTest extends KernelTestCase
      */
     public function testCbrParseTicker(): void
     {
-        $ticker1 = $this->parser->withDate(new DateTimeImmutable())->getNext();
+        $ticker1 = $this->parser
+            ->withRates(RatesDto::create($this->provider->getRates()))
+            ->getNext();
         self::assertNotNull($ticker1);
 
         $ticker2 = $this->parser->getNext();

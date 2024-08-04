@@ -4,9 +4,7 @@ namespace App\Service;
 
 use App\Dto\TickerDto;
 
-interface TickerStorageInterface
+interface TickerStorageInterface extends TickerServiceInterface
 {
-    public function getTicker(): ?TickerDto;
-
     public function putTicker(TickerDto $ticker): void;
 }

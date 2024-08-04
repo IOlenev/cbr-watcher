@@ -2,6 +2,7 @@
 
 namespace App\tests\Functional;
 
+use App\Dto\DateDto;
 use App\Service\RatesProviderInterface;
 use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -18,9 +19,18 @@ class RatesProviderTest extends KernelTestCase
         $this->provider = $container->get(RatesProviderInterface::class);
     }
 
-    public function testCbrProvider(): void
+    public function testGetRatesOutOfRange(): void
     {
-        $xml = $this->provider->getRates(new DateTimeImmutable());
+        $xml = $this->provider->getRates(DateDto::create(new DateTimeImmutable('-1000 day')));
+        self::assertNull($xml);
+    }
+
+    /**
+     * @depends testGetRatesOutOfRange
+     */
+    public function testGetRatesSuccessful(): void
+    {
+        $xml = $this->provider->getRates();
         self::assertNotEmpty($xml);
     }
 }

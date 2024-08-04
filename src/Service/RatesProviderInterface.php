@@ -2,9 +2,9 @@
 
 namespace App\Service;
 
-use DateTimeInterface;
+use App\Dto\DateDto;
 
 interface RatesProviderInterface
 {
-    public function getRates(DateTimeInterface $date): ?string;
+    public function getRates(?DateDto $date = null): ?string;
 }

@@ -2,8 +2,8 @@
 
 namespace App\tests\Functional;
 
+use App\Domain\Rates\Service\RatesProviderInterface;
 use App\Dto\DateDto;
-use App\Service\RatesProviderInterface;
 use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 

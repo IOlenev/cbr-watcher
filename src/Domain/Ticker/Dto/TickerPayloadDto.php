@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Message;
+namespace App\Domain\Ticker\Dto;
 
 use App\Dto\DateDto;
 use DateTime;
 use DateTimeImmutable;
 
-final class RatesPreloadMessage
+class TickerPayloadDto
 {
     private DateDto $previousDate;
+    private TickerDto $ticker;
 
     private function __construct(private DateDto $baseDate)
     {
@@ -19,13 +20,24 @@ final class RatesPreloadMessage
         );
     }
 
-    public static function create(?DateDto $baseDate = null): self
+    public static function create(string $charCode, ?DateDto $baseDate = null, string $baseCurrency): static
     {
         if (is_null($baseDate)) {
             $baseDate = DateDto::create();
         }
 
-        return new self($baseDate);
+        return (new static($baseDate))->setTicker(TickerDto::create($charCode, '0', 1, $baseCurrency));
+    }
+
+    public function setTicker(TickerDto $ticker): self
+    {
+        $this->ticker = $ticker;
+        return $this;
+    }
+
+    public function getTicker(): TickerDto
+    {
+        return $this->ticker;
     }
 
     public function getBaseDate(): DateDto

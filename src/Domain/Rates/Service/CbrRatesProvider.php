@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service;
+namespace App\Domain\Rates\Service;
 
 use App\Dto\DateDto;
 use DateTimeImmutable;
@@ -19,8 +19,8 @@ final class CbrRatesProvider implements RatesProviderInterface
     private DateDto $borderDate;
 
     public function __construct(
-        readonly private HttpClientInterface $client,
-        readonly private CacheInterface      $ratesCache,
+        private readonly HttpClientInterface $client,
+        private readonly CacheInterface      $ratesCache,
         ParameterBagInterface       $params
     ) {
         $this->borderDate = DateDto::create(

@@ -1,0 +1,53 @@
+<?php
+
+namespace App\Tests\Functional;
+
+use App\Domain\Rates\Feature\RatesPreloadFeature;
+use App\Domain\Rates\Message\RatesPreloadMessage;
+use App\Domain\Storage\Service\TickerStorageInterface;
+use App\Domain\Ticker\Dto\TickerDto;
+use App\Domain\Ticker\Dto\TickerPayloadDto;
+use App\Domain\Ticker\Feature\IndexRurFeature;
+use App\Domain\Ticker\Message\IndexRurMessage;
+use App\Dto\DateDto;
+use DateTime;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+
+class IndexRurFeatureTest extends KernelTestCase
+{
+    private const DATE = '20240810';
+    private const CODE = 'USD';
+
+    private TickerStorageInterface $storage;
+    private RatesPreloadFeature $preloadFeature;
+    private IndexRurFeature $feature;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        self::bootKernel();
+        $container = static::getContainer();
+        $this->preloadFeature = $container->get(RatesPreloadFeature::class);
+        $this->feature = $container->get(IndexRurFeature::class);
+        $this->storage = $container->get(TickerStorageInterface::class);
+        $this->storage->withDate(DateDto::create(new DateTime(self::DATE)));
+    }
+
+    public function testComputeTicker(): void
+    {
+        $payload = TickerPayloadDto::create(
+            self::CODE,
+            DateDto::create(new DateTime(self::DATE)),
+            TickerDto::BASE_CURRENCY
+        );
+
+        ($this->preloadFeature)(new RatesPreloadMessage($payload));
+
+        $this->storage->removeTicker(TickerDto::create(self::CODE));
+        ($this->feature)(new IndexRurMessage($payload));
+        $ticker = $this->storage->getTicker(self::CODE, TickerDto::BASE_CURRENCY);
+        self::assertNotNull($ticker);
+        self::assertEquals(self::CODE, $ticker->getCharCode());
+        self::assertNotNull($ticker->getDelta());
+    }
+}

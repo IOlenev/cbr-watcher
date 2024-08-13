@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Dto;
+namespace App\Domain\Rates\Dto;
 
 final class RatesDto
 {
     private function __construct(
-        readonly private string $raw
+        private readonly string $raw
     ) {
     }
 

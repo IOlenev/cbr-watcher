@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Service;
+namespace App\Domain\Rates\Service;
 
-use App\Dto\RatesDto;
-use App\Dto\TickerDto;
+use App\Domain\Rates\Dto\RatesDto;
+use App\Domain\Ticker\Dto\TickerDto;
 
 interface RatesParserInterface
 {

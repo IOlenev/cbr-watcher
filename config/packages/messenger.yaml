@@ -5,13 +5,19 @@ framework:
 
         transports:
             # https://symfony.com/doc/current/messenger.html#transport-configuration
-            async: '%env(MESSENGER_TRANSPORT_DSN)%'
-            # failed: 'doctrine://default?queue_name=failed'
-            # sync: 'sync://'
+            rates_preload:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%/rates_preload'
+                #options:
+                #    consumer: '%env(MESSENGER_CONSUMER_NAME)%'
+            index_rur:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%/index_rur'
+                #options:
+                #    consumer: '%env(MESSENGER_CONSUMER_NAME)%'
+
 
         routing:
-            # Route your messages to the transports
-            # 'App\Message\YourMessage': async
+            'App\Domain\Rates\Message\RatesPreloadMessage': rates_preload
+            'App\Domain\Ticker\Message\IndexRurMessage': index_rur
 
 # when@test:
 #    framework:

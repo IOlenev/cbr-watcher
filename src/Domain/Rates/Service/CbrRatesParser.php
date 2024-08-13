@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Service;
+namespace App\Domain\Rates\Service;
 
-use App\Dto\RatesDto;
-use App\Dto\TickerDto;
+use App\Domain\Rates\Dto\RatesDto;
+use App\Domain\Ticker\Dto\TickerDto;
 use LogicException;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,7 +27,11 @@ final class CbrRatesParser implements RatesParserInterface
         if ($reset) {
             reset($this->dayRates);
         }
+
         $result = current($this->dayRates);
+        if (!is_array($result)) {
+            return null;
+        }
         next($this->dayRates);
 
         return TickerDto::create($result['CharCode'], $result['Value'], $result['Nominal']);

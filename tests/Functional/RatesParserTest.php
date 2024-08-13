@@ -2,10 +2,10 @@
 
 namespace App\Tests\Functional;
 
-use App\Dto\RatesDto;
-use App\Dto\TickerDto;
-use App\Service\RatesParserInterface;
-use App\Service\RatesProviderInterface;
+use App\Domain\Rates\Dto\RatesDto;
+use App\Domain\Rates\Service\RatesParserInterface;
+use App\Domain\Rates\Service\RatesProviderInterface;
+use App\Domain\Ticker\Dto\TickerDto;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Throwable;
 

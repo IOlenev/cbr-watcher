@@ -39,14 +39,17 @@ services:
       - ./:/var/www
       - ./var/tmp:/tmp
       - ./var:/var/www/var
+      - ./config/messenger-worker.conf:/etc/supervisor/conf.d/messenger-worker.conf:ro
+      - ./var/supervisor:/var/log/supervisor
     environment:
-      HTTP_PROXY:
-      HTTPS_PROXY:
-      http_proxy:
-      https_proxy:
+      #HTTP_PROXY:
+      #HTTPS_PROXY:
+      #http_proxy:
+      #https_proxy:
       XDEBUG_MODE: debug,profile
       XDEBUG_CONFIG: client_host=192.168.220.1 client_port=9003 mode=debug,profile start_with_request=yes discover_client_host=false
       PHP_IDE_CONFIG: serverName=Docker
+      TZ: ${TZ}
     links:
       - cbrw-redis
     networks:

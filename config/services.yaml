@@ -24,8 +24,14 @@ services:
         arguments:
             - "%env(REDIS_DSN)%"
 
-    App\Service\RatesProviderInterface:
-        class: App\Service\CbrRatesProvider
+    App\Domain\Rates\Service\RatesProviderInterface:
+        class: App\Domain\Rates\Service\CbrRatesProvider
 
-    App\Service\RatesParserInterface:
-        class: App\Service\CbrRatesParser
+    App\Domain\Rates\Service\RatesParserInterface:
+        class: App\Domain\Rates\Service\CbrRatesParser
+
+    App\Domain\Ticker\Service\TickerStorageInterface:
+        class: App\Domain\Ticker\Service\TickerStorageCache
+
+    App\Domain\Storage\Service\TickerServiceInterface:
+        class: App\Domain\Storage\Service\TickerService

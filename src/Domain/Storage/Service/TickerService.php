@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Service;
+namespace App\Domain\Storage\Service;
 
+use App\Domain\Rates\Message\RatesPreloadMessage;
+use App\Domain\Ticker\Dto\TickerDto;
+use App\Domain\Ticker\Dto\TickerPayloadDto;
 use App\Dto\DateDto;
-use App\Dto\TickerDto;
-use App\Message\RatesPreloadMessage;
 use LogicException;
 use Symfony\Component\Messenger\MessageBusInterface;
 
@@ -13,8 +14,8 @@ class TickerService implements TickerServiceInterface
     private ?DateDto $date = null;
 
     public function __construct(
-        readonly private TickerStorage $storage,
-        readonly private MessageBusInterface $bus
+        private readonly TickerStorageInterface $storage,
+        private readonly MessageBusInterface $bus
     ) {
     }
 
@@ -34,18 +35,20 @@ class TickerService implements TickerServiceInterface
     }
 
 
-    public function getTicker(string $charCode): ?TickerDto
+    public function getTicker(string $charCode, string $baseCurrency): ?TickerDto
     {
         if (is_null($this->date)) {
             throw new LogicException('Date not specified');
         }
 
-        $ticker = $this->storage->getTicker($charCode);
+        $ticker = $this->storage->getTicker($charCode, $baseCurrency);
         if (!is_null($ticker?->getDelta())) {
             return $ticker;
         }
 
-        $this->bus->dispatch(RatesPreloadMessage::create($this->date));
+        $this->bus->dispatch(new RatesPreloadMessage(
+            TickerPayloadDto::create($charCode, $this->date, $baseCurrency))
+        );
         return null;
     }
 }

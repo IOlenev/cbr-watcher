@@ -1,6 +1,7 @@
 FROM php:8.2-fpm
 RUN apt-get update && apt-get install -y \
-	curl \
+    supervisor \
+    curl \
     wget \
     zip unzip \
     libicu-dev \
@@ -26,5 +27,7 @@ RUN docker-php-ext-install intl opcache pdo pdo_mysql \
     && echo 'xdebug.mode=debug' >> /usr/local/etc/php/php.ini
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+ENTRYPOINT ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]
 
 WORKDIR /var/www

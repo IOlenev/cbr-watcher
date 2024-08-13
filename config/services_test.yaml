@@ -2,10 +2,10 @@ services:
     _defaults:
         autowire: true
 
-    App\Service\RatesProviderInterface:
-        class: App\Service\CbrRatesProvider
+    App\Domain\Rates\Service\RatesProviderInterface:
+        class: App\Domain\Rates\Service\CbrRatesProvider
         public: true
 
-    App\Service\RatesParserInterface:
-        class: App\Service\CbrRatesParser
+    App\Domain\Rates\Service\RatesParserInterface:
+        class: App\Domain\Rates\Service\CbrRatesParser
         public: true

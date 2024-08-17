@@ -2,11 +2,14 @@
 
 namespace App\Domain\Ticker\Dto;
 
-class TickerDto
+use App\Dto\DateDto;
+
+final class TickerDto
 {
     public const BASE_CURRENCY = 'RUR';
 
     private ?float $delta = null;
+    private ?DateDto $date = null;
 
     private function __construct(
         private string $charCode,
@@ -60,6 +63,16 @@ class TickerDto
         return $this->delta;
     }
 
+    public function setDate(DateDto $date): void
+    {
+        $this->date = $date;
+    }
+
+    public function getDate(): ?DateDto
+    {
+        return $this->date;
+    }
+
     public function getKrur(): float
     {
         return 1 / $this->getValue() * $this->getNominal();
@@ -68,7 +81,8 @@ class TickerDto
     public function __toString(): string
     {
         return sprintf(
-            '%s / %d %s %01.4f (%01.4f)',
+            '%s %s / %d %s %01.4f (%01.4f)',
+            $this->getDate()?->format('Y-m-d'),
             $this->getCharCode(),
             $this->getNominal(),
             $this->baseCurrency,

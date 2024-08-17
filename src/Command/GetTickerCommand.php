@@ -27,6 +27,7 @@ final class GetTickerCommand extends Command
     ) {
         parent::__construct();
     }
+
     protected function configure(): void
     {
         $this
@@ -50,7 +51,7 @@ final class GetTickerCommand extends Command
             return Command::INVALID;
         }
 
-        $date = DateTimeImmutable::createFromMutable(new DateTime($inputParams->getDate()));
+        $date = new DateTime($inputParams->getDate());
         $this->tickerService->withDate(DateDto::create($date));
         $ticker = $this->tickerService->getTicker($inputParams->getTicker(), $inputParams->getBaseCurrency());
         if (is_null($ticker)) {

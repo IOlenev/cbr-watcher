@@ -34,6 +34,7 @@ class TickerStorageCache implements TickerStorageInterface
     public function putTicker(TickerDto $ticker): void
     {
         $item = $this->tickerCache->getItem($this->getKey($ticker->getCharCode(), $ticker->getBaseCurrency()));
+        $ticker->setDate($this->date);
         $item->set($ticker);
         $this->tickerCache->save($item);
     }

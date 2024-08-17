@@ -7,7 +7,7 @@ use DateTime;
 use Symfony\Component\Validator\Constraints as Assert;
 use Throwable;
 
-class InputDto
+final class InputDto
 {
     private function __construct(
         #[Assert\Regex('/^[A-Z]+$/')]
@@ -22,7 +22,7 @@ class InputDto
         string $ticker,
         ?string $date = null,
         ?string $baseCurrency = null
-    ): static {
+    ): self {
         if (is_null($date)) {
             $date = 'midnight';
         }
@@ -30,10 +30,10 @@ class InputDto
             $baseCurrency = TickerDto::BASE_CURRENCY;
         }
 
-        return new static(
-            trim(strtoupper($ticker)),
+        return new self(
+            strtoupper(trim($ticker)),
             $date,
-            trim(strtoupper($baseCurrency))
+            strtoupper(trim($baseCurrency))
         );
     }
 

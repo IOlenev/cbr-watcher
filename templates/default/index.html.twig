@@ -1,0 +1,8 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    You welcome!
+    <p>Service usage:
+        {{ "http://localhost:8800/<ticker>/<date>(default: now)/<baseCurrency>(default: RUR)" | escape }}
+    </p>
+    <p>Example: <a href="/USD">http://localhost:8800/USD</a></p>
+{% endblock %}

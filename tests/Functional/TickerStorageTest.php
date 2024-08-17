@@ -31,6 +31,7 @@ class TickerStorageTest extends KernelTestCase
         $this->storage->putTicker($this->ticker);
         $ticker = $this->storage->getTicker($this->ticker->getCharCode(), $this->ticker->getBaseCurrency());
         self::assertEquals($this->ticker, $ticker);
+        self::assertNotNull($this->ticker->getDate());
 
         $newNominalTicker = TickerDto::create(self::CODE, microtime(), 10, self::BASE);
         self::assertNotEquals($this->ticker->getNominal(), $newNominalTicker->getNominal());

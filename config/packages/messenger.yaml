@@ -7,17 +7,15 @@ framework:
             # https://symfony.com/doc/current/messenger.html#transport-configuration
             rates_preload:
                 dsn: '%env(MESSENGER_TRANSPORT_DSN)%/rates_preload'
-                #options:
-                #    consumer: '%env(MESSENGER_CONSUMER_NAME)%'
             index_rur:
                 dsn: '%env(MESSENGER_TRANSPORT_DSN)%/index_rur'
-                #options:
-                #    consumer: '%env(MESSENGER_CONSUMER_NAME)%'
-
+            index_base:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%/index_base'
 
         routing:
             'App\Domain\Rates\Message\RatesPreloadMessage': rates_preload
             'App\Domain\Ticker\Message\IndexRurMessage': index_rur
+            'App\Domain\Ticker\Message\IndexBaseMessage': index_base
 
 # when@test:
 #    framework:

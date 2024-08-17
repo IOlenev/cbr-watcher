@@ -3,7 +3,7 @@
 namespace App\Domain\Rates\Service;
 
 use App\Dto\DateDto;
-use DateTimeImmutable;
+use DateTime;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,19 +20,17 @@ final class CbrRatesProvider implements RatesProviderInterface
 
     public function __construct(
         private readonly HttpClientInterface $client,
-        private readonly CacheInterface      $ratesCache,
-        ParameterBagInterface       $params
+        private readonly CacheInterface $ratesCache,
+        ParameterBagInterface $params
     ) {
         $this->borderDate = DateDto::create(
-            new DateTimeImmutable(sprintf('-%d day', (int)$params->get('days_date_range')))
+            new DateTime(sprintf('-%d day', (int)$params->get('days_date_range')))
         );
     }
 
     public function getRates(?DateDto $date = null): ?string
     {
-        if (is_null($date)) {
-            $date = DateDto::create();
-        }
+        $date ??= DateDto::create();
 
         if (strcmp($date, $this->borderDate) < 0) {
             return null;

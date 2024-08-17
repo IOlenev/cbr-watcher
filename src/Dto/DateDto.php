@@ -3,24 +3,20 @@
 namespace App\Dto;
 
 use DateTime;
-use DateTimeImmutable;
-use DateTimeInterface;
 
 final class DateDto
 {
     private const FORMAT = 'Ymd';
 
-    private function __construct(private DateTimeInterface $date)
+    private function __construct(private DateTime $date)
     {
     }
 
-    public static function create(?DateTimeInterface $date = null): self
+    public static function create(?DateTime $date = null): self
     {
-        if (is_null($date)) {
-            $date = DateTimeImmutable::createFromMutable(new DateTime('00:00'));
-        }
+        $date ??= new DateTime();
 
-        return new self($date);
+        return new self($date->setTime(0, 0));
     }
 
     public function format(string $pattern): string

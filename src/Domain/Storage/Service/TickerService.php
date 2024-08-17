@@ -21,9 +21,7 @@ class TickerService implements TickerServiceInterface
 
     public function withDate(?DateDto $date = null): TickerServiceInterface
     {
-        if (is_null($date)) {
-            $date = DateDto::create();
-        }
+        $date ??= DateDto::create();
 
         if (!strcmp($date, $this->date)) { //if equal
             return $this;

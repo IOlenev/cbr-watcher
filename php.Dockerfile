@@ -29,5 +29,6 @@ RUN docker-php-ext-install intl opcache pdo pdo_mysql \
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 ENTRYPOINT ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]
+USER $USER
 
 WORKDIR /var/www

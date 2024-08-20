@@ -48,16 +48,6 @@ class TickerStorageTest extends KernelTestCase
         self::assertNull($ticker);
     }
 
-    /**
-     * @depends testSaveSuccess
-     */
-    public function testSaveFail(): void
-    {
-        self::markTestSkipped();
-        $this->expectException(Throwable::class);
-        $this->storage->getTicker(self::CODE, self::BASE);
-    }
-
     protected function tearDown(): void
     {
         $this->storage->removeTicker($this->ticker);

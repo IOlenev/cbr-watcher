@@ -6,7 +6,7 @@ use App\Dto\DateDto;
 
 final class TickerDto
 {
-    public const BASE_CURRENCY = 'RUR';
+    public const DEFAULT_CURRENCY = 'RUR';
 
     private ?float $delta = null;
     private ?DateDto $date = null;
@@ -23,7 +23,7 @@ final class TickerDto
         string $charCode,
         string $value = '0',
         int $nominal = 1,
-        string $baseCurrency = self::BASE_CURRENCY
+        string $baseCurrency = self::DEFAULT_CURRENCY
     ): static {
         return new static(
             $charCode,
@@ -81,10 +81,10 @@ final class TickerDto
     public function __toString(): string
     {
         return sprintf(
-            '%s %s / %d %s %01.4f (%01.4f)',
+            '%s: %d %s / 1 %s => %01.4f (%01.4f)',
             $this->getDate()?->format('Y-m-d'),
-            $this->getCharCode(),
             $this->getNominal(),
+            $this->getCharCode(),
             $this->baseCurrency,
             $this->getValue(),
             $this->getDelta()

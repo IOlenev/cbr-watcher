@@ -8,7 +8,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class InputValidationTest extends KernelTestCase
 {
-    private const DATE = '20240802';
+    private const DATE = '-1 day';
     private const CODE = 'BLA';
     private const BASE = 'ALB';
 

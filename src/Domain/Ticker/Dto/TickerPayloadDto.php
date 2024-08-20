@@ -20,7 +20,7 @@ class TickerPayloadDto
     public static function create(
         string $charCode,
         ?DateDto $baseDate = null,
-        string $baseCurrency = TickerDto::BASE_CURRENCY
+        string $baseCurrency = TickerDto::DEFAULT_CURRENCY
     ): static {
         $baseDate ??= DateDto::create();
 

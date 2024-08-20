@@ -21,7 +21,7 @@ final class IndexRurFeature
 
     public function __invoke(IndexRurMessage $message): void
     {
-        if ($message->payload->getTicker()->getBaseCurrency() !== TickerDto::BASE_CURRENCY) {
+        if ($message->payload->getTicker()->getBaseCurrency() !== TickerDto::DEFAULT_CURRENCY) {
             throw new LogicException('This feature builds RUR index only');
         }
 
@@ -50,10 +50,11 @@ final class IndexRurFeature
             $this->provider->getRates($message->payload->getPreviousDate())
         ));
         while ($previousDateTicker = $this->parser->getNext()) {
-            if (isset($tickers[$previousDateTicker->getCharCode()])) {
-                $tickers[$previousDateTicker->getCharCode()]->computeDelta($previousDateTicker->getValue());
-                $this->storage->putTicker($tickers[$previousDateTicker->getCharCode()]);
+            if (!isset($tickers[$previousDateTicker->getCharCode()])) {
+                continue;
             }
+            $tickers[$previousDateTicker->getCharCode()]->computeDelta($previousDateTicker->getValue());
+            $this->storage->putTicker($tickers[$previousDateTicker->getCharCode()]);
         }
     }
 }

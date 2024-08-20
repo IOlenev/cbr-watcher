@@ -11,19 +11,21 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Throwable;
 
 #[AsCommand(
-    name: 'app:get-ticker',
-    description: 'Get ticker rate. Usage: php bin/console app:get-ticker <ticker> <date>(optional, default: now) <baseCurrency> (optional, default: RUR)',
+    name: 'app:warmup',
+    description: 'Warmup currency rates. Usage: php bin/console app:warmup <ticker> <baseCurrency> (optional, default: RUR)',
     hidden: false
 )]
-final class GetTickerCommand extends Command
+final class WarmupCommand extends Command
 {
     public function __construct(
         private readonly TickerServiceInterface $tickerService,
-        private readonly ValidatorInterface $validator
+        private readonly ValidatorInterface $validator,
+        private ParameterBagInterface $params
     ) {
         parent::__construct();
     }
@@ -37,24 +39,18 @@ final class GetTickerCommand extends Command
                 'The currency ticker'
             )
             ->addArgument(
-                'date',
-                InputArgument::OPTIONAL,
-                'The date of the rate'
-            )
-            ->addArgument(
                 'baseCurrency',
                 InputArgument::OPTIONAL,
                 'The rate base currency ticker',
                 TickerDto::DEFAULT_CURRENCY
-            )
-        ;
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $inputParams = InputDto::create(
             $input->getArgument('ticker'),
-            $input->getArgument('date'),
+            DateDto::create()->format('Ymd'),
             $input->getArgument('baseCurrency')
         );
 
@@ -66,21 +62,20 @@ final class GetTickerCommand extends Command
             return Command::INVALID;
         }
 
-        $date = new DateTime($inputParams->getDate());
-        $this->tickerService->withDate(DateDto::create($date));
-        try {
-            $ticker = $this->tickerService->getTicker($inputParams->getTicker(), $inputParams->getBaseCurrency());
-        } catch (Throwable $exception) {
-            $output->writeln('Error: ' . $exception->getMessage());
-            return Command::FAILURE;
-        }
-        if (is_null($ticker)) {
-            $output->writeln('Processing..');
-            $output->writeln('Try again later');
-            return Command::FAILURE;
-        }
+        $date = new DateTime();
+        $borderDate = new DateTime(sprintf('-%d day', (int)$this->params->get('days_date_range')));
 
-        $output->writeln((string) $ticker);
+        while ($date > $borderDate) {
+            $this->tickerService->withDate(DateDto::create($date));
+            try {
+                $this->tickerService->getTicker($inputParams->getTicker(), $inputParams->getBaseCurrency());
+            } catch (Throwable $exception) {
+                $output->writeln('Error: ' . $exception->getMessage());
+                return Command::FAILURE;
+            }
+            $date->modify('-1 day');
+        }
+        $output->writeln('Done. Warmed up to ' . $borderDate->modify('1 day')->format('Y-m-d'));
         return Command::SUCCESS;
     }
 }

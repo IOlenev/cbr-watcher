@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Throwable;
 
 class IndexController extends AbstractController
 {
@@ -26,23 +27,34 @@ class IndexController extends AbstractController
         $input = InputDto::create($ticker, $date, $baseCurrency);
         $errors = $this->validator->validate($input);
         $attempts = count($errors) ? 0 : 3;
+        $errors = count($errors)
+            ? sprintf('%s - %s', $errors->get(0)->getPropertyPath(), $errors->get(0)->getMessage())
+            : '';
 
         while (--$attempts > 0) {
-            $result = $this->tickerService
-                ->withDate(DateDto::create(new DateTime($input->getDate())))
-                ->getTicker(
-                    $input->getTicker(),
-                    $input->getBaseCurrency()
-                );
+            try {
+                $result = $this->tickerService
+                    ->withDate(DateDto::create(new DateTime($input->getDate())))
+                    ->getTicker(
+                        $input->getTicker(),
+                        $input->getBaseCurrency()
+                    );
+            } catch (Throwable $exception) {
+                $errors = $exception->getMessage();
+                break;
+            }
             if (!is_null($result)) {
                 break;
             }
             sleep(2);
         }
 
+        if (empty($result ??= null) && empty($errors)) {
+            $errors = 'Processing.. Try again';
+        }
         return $this->json([
-            'result' => (string) ($result ?? null),
-            'errors' => (string) $errors,
+            'result' => (string) $result,
+            'errors' => $errors,
         ]);
     }
 

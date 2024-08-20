@@ -22,13 +22,13 @@ final class IndexRurHandler
         $messageRur = new IndexRurMessage(
             TickerPayloadDto::create(
                 $message->payload->getTicker()->getCharCode(),
-                $message->payload->getBaseDate(),
-            TickerDto::BASE_CURRENCY
-        ));
+                $message->payload->getBaseDate()
+            )
+        );
         ($this->feature)($messageRur);
 
-        if ($message->payload->getTicker()->getBaseCurrency() !== TickerDto::BASE_CURRENCY) {
-            $this->bus->dispatch($message);
+        if ($message->payload->getTicker()->getBaseCurrency() !== TickerDto::DEFAULT_CURRENCY) {
+            $this->bus->dispatch(new IndexBaseMessage($message->payload));
         }
     }
 }

@@ -15,7 +15,7 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class IndexRurFeatureTest extends KernelTestCase
 {
-    private const DATE = '20240810';
+    private const DATE = '-2 day';
     private const CODE = 'USD';
 
     private TickerStorageInterface $storage;
@@ -37,15 +37,13 @@ class IndexRurFeatureTest extends KernelTestCase
     {
         $payload = TickerPayloadDto::create(
             self::CODE,
-            DateDto::create(new DateTime(self::DATE)),
-            TickerDto::BASE_CURRENCY
+            DateDto::create(new DateTime(self::DATE))
         );
 
-        ($this->preloadFeature)(new RatesPreloadMessage($payload));
-
         $this->storage->removeTicker(TickerDto::create(self::CODE));
+        ($this->preloadFeature)(new RatesPreloadMessage($payload));
         ($this->feature)(new IndexRurMessage($payload));
-        $ticker = $this->storage->getTicker(self::CODE, TickerDto::BASE_CURRENCY);
+        $ticker = $this->storage->getTicker(self::CODE, TickerDto::DEFAULT_CURRENCY);
         self::assertNotNull($ticker);
         self::assertEquals(self::CODE, $ticker->getCharCode());
         self::assertNotNull($ticker->getDelta());

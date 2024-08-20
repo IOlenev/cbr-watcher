@@ -1,3 +1,6 @@
+parameters:
+    env(CONSUMER_ID): '0'
+
 framework:
     messenger:
         # Uncomment this (and the failed transport below) to send failed messages to this transport for later handling.
@@ -6,11 +9,11 @@ framework:
         transports:
             # https://symfony.com/doc/current/messenger.html#transport-configuration
             rates_preload:
-                dsn: '%env(MESSENGER_TRANSPORT_DSN)%/rates_preload'
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%/rates_preload/symfony/consumer-%env(CONSUMER_ID)%?auto_setup=true'
             index_rur:
-                dsn: '%env(MESSENGER_TRANSPORT_DSN)%/index_rur'
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%/index_rur/symfony/consumer-%env(CONSUMER_ID)%?auto_setup=true'
             index_base:
-                dsn: '%env(MESSENGER_TRANSPORT_DSN)%/index_base'
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%/index_base/symfony/consumer-%env(CONSUMER_ID)%?auto_setup=true'
 
         routing:
             'App\Domain\Rates\Message\RatesPreloadMessage': rates_preload

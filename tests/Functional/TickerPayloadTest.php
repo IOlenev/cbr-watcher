@@ -11,8 +11,8 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 class TickerPayloadTest extends KernelTestCase
 {
     private const CODE = 'BLA';
-    private const BASE_DATE = '2024-08-02';
-    private const PREVIOUS_DATE = '2024-08-01';
+    private const BASE_DATE = '-1 day';
+    private const PREVIOUS_DATE = '-2 day';
 
     private TickerPayloadDto $message;
 
@@ -23,19 +23,18 @@ class TickerPayloadTest extends KernelTestCase
             self::CODE,
             DateDto::create(
                 new DateTime(self::BASE_DATE)
-            ),
-            TickerDto::BASE_CURRENCY
+            )
         );
     }
 
     public function testMessageDates(): void
     {
         self::assertEquals(
-            self::BASE_DATE,
+            DateDto::create(new DateTime(self::BASE_DATE))->format('Y-m-d'),
             $this->message->getBaseDate()->format('Y-m-d')
         );
         self::assertEquals(
-            self::PREVIOUS_DATE,
+            DateDto::create(new DateTime(self::PREVIOUS_DATE))->format('Y-m-d'),
             $this->message->getPreviousDate()->format('Y-m-d')
         );
     }
@@ -45,7 +44,7 @@ class TickerPayloadTest extends KernelTestCase
         $this->message = TickerPayloadDto::create(
             self::CODE,
             DateDto::create(),
-            TickerDto::BASE_CURRENCY
+            TickerDto::DEFAULT_CURRENCY
         );
 
         self::assertEquals(

@@ -27,7 +27,7 @@ final class InputDto
             $date = 'midnight';
         }
         if (is_null($baseCurrency)) {
-            $baseCurrency = TickerDto::BASE_CURRENCY;
+            $baseCurrency = TickerDto::DEFAULT_CURRENCY;
         }
 
         return new self(

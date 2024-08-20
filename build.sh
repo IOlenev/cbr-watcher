@@ -13,3 +13,7 @@ APP_DEBUG=1
 APP_SECRET='Bla$(date '+%Y%m%d%H%M%S')secret > .env.local
 
 docker-compose up -d --build
+
+docker exec cbrw-php composer install
+docker exec cbrw-php supervisorctl stop all
+docker exec cbrw-php supervisorctl start all

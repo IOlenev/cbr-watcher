@@ -24,7 +24,7 @@ final class CbrRatesProvider implements RatesProviderInterface
         ParameterBagInterface $params
     ) {
         $this->borderDate = DateDto::create(
-            new DateTime(sprintf('-%d day', (int)$params->get('days_date_range')))
+            new DateTime(sprintf('-%d day', (int)$params->get('days_date_range') + 1))
         );
     }
 

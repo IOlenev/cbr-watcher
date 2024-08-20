@@ -21,7 +21,7 @@ final class IndexBaseFeature
 
     public function __invoke(IndexBaseMessage $message): void
     {
-        if ($message->payload->getTicker()->getBaseCurrency() === TickerDto::BASE_CURRENCY) {
+        if ($message->payload->getTicker()->getBaseCurrency() === TickerDto::DEFAULT_CURRENCY) {
             throw new LogicException('This feature builds base index only');
         }
 
@@ -35,8 +35,8 @@ final class IndexBaseFeature
         }
 
         $tickerRur = $this->storage->getTicker(
-            $message->payload->getTicker()->getCharCode(),
-            $message->payload->getTicker()->getBaseCurrency()
+            $message->payload->getTicker()->getBaseCurrency(),
+            TickerDto::DEFAULT_CURRENCY
         );
         if (is_null($tickerRur)) {
             throw new LogicException('Impossible to build base index without rur index');
@@ -50,7 +50,13 @@ final class IndexBaseFeature
             $this->provider->getRates($message->payload->getBaseDate())
         ));
         while ($ticker = $this->parser->getNext()) {
-            $tickers[$ticker->getCharCode()] = $ticker;
+            $tickerCurrency = TickerDto::create(
+                $ticker->getCharCode(),
+                $ticker->getValue() * $tickerRur->getKrur(),
+                $ticker->getNominal(),
+                $message->payload->getTicker()->getBaseCurrency()
+            );
+            $tickers[$tickerCurrency->getCharCode()] = $tickerCurrency;
         }
 
         //previous rates loop
@@ -58,10 +64,13 @@ final class IndexBaseFeature
             $this->provider->getRates($message->payload->getPreviousDate())
         ));
         while ($previousDateTicker = $this->parser->getNext()) {
-            if (isset($tickers[$previousDateTicker->getCharCode()])) {
-                $tickers[$previousDateTicker->getCharCode()]->computeDelta($previousDateTicker->getValue());
-                $this->storage->putTicker($tickers[$previousDateTicker->getCharCode()]);
+            if (!isset($tickers[$previousDateTicker->getCharCode()])) {
+                continue;
             }
+            $tickers[$previousDateTicker->getCharCode()]->computeDelta(
+                $previousDateTicker->getValue() * $tickerRur->getKrur()
+            );
+            $this->storage->putTicker($tickers[$previousDateTicker->getCharCode()]);
         }
     }
 }

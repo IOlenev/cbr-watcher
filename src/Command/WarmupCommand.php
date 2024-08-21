@@ -76,6 +76,7 @@ final class WarmupCommand extends Command
             $date->modify('-1 day');
         }
         $output->writeln('Done. Warmed up to ' . $borderDate->modify('1 day')->format('Y-m-d'));
+        $output->writeln('Please wait for queue jobs complete');
         return Command::SUCCESS;
     }
 }

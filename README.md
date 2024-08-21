@@ -43,6 +43,10 @@ Linux, MacOS with Docker and Git installed
      > docker exec cbrw-php php bin/console app:get-ticker USD 20240812 AUD
 
 ### Service
+- queue workers (status, stop, start)
+> - docker exec cbrw-php supervisorctl status
+> - docker exec cbrw-php supervisorctl stop all
+> - docker exec cbrw-php supervisorctl start all
 - get info about the rates_preload queue
 > docker exec cbrw-redis redis-cli xinfo groups rates_preload- get info about the rates_preload queue
 - get info about the building rur index queue

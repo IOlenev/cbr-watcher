@@ -41,3 +41,11 @@ Linux, MacOS with Docker and Git installed
      > docker exec cbrw-php php bin/console app:get-ticker USD 20240812
      > 
      > docker exec cbrw-php php bin/console app:get-ticker USD 20240812 AUD
+
+### Service
+- get info about the rates_preload queue
+> docker exec cbrw-redis redis-cli xinfo groups rates_preload- get info about the rates_preload queue
+- get info about the building rur index queue
+> docker exec cbrw-redis redis-cli xinfo groups index_rur
+- get info about the building base currency index queue
+> docker exec cbrw-redis redis-cli xinfo groups index_base

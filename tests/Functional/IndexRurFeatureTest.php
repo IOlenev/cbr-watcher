@@ -15,7 +15,7 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class IndexRurFeatureTest extends KernelTestCase
 {
-    private const DATE = '-2 day';
+    private const DATE = '-1 day';
     private const CODE = 'USD';
 
     private TickerStorageInterface $storage;
@@ -39,7 +39,6 @@ class IndexRurFeatureTest extends KernelTestCase
             self::CODE,
             DateDto::create(new DateTime(self::DATE))
         );
-
         $this->storage->removeTicker(TickerDto::create(self::CODE));
         ($this->preloadFeature)(new RatesPreloadMessage($payload));
         ($this->feature)(new IndexRurMessage($payload));
@@ -47,5 +46,29 @@ class IndexRurFeatureTest extends KernelTestCase
         self::assertNotNull($ticker);
         self::assertEquals(self::CODE, $ticker->getCharCode());
         self::assertNotNull($ticker->getDelta());
+
+        //previous
+        $previousDate = DateDto::create((new DateTime(self::DATE))->modify('-1 day'));
+        $payload = TickerPayloadDto::create(
+            self::CODE,
+            $previousDate
+        );
+        $this->storage->withDate($previousDate);
+        $this->storage->removeTicker(TickerDto::create(self::CODE));
+        ($this->preloadFeature)(new RatesPreloadMessage($payload));
+        ($this->feature)(new IndexRurMessage($payload));
+        $previousTicker = $this->storage->getTicker(self::CODE, TickerDto::DEFAULT_CURRENCY);
+        self::assertNotNull($previousTicker);
+        $delta = $ticker->getValue() - $previousTicker->getValue();
+        self::assertEquals(
+            number_format(
+                $delta,
+                4
+            ),
+            number_format(
+                $ticker->getDelta(),
+                4
+            )
+        );
     }
 }

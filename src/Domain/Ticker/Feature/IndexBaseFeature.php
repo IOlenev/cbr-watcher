@@ -63,6 +63,12 @@ final class IndexBaseFeature
         $this->parser->withRates(RatesDto::create(
             $this->provider->getRates($message->payload->getPreviousDate())
         ));
+        $this->storage->withDate($message->payload->getPreviousDate());
+        $tickerRur = $this->storage->getTicker(
+            $message->payload->getTicker()->getBaseCurrency(),
+            TickerDto::DEFAULT_CURRENCY
+        );
+        $this->storage->withDate($message->payload->getBaseDate());
         while ($previousDateTicker = $this->parser->getNext()) {
             if (!isset($tickers[$previousDateTicker->getCharCode()])) {
                 continue;

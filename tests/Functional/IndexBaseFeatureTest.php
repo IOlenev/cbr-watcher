@@ -17,7 +17,7 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class IndexBaseFeatureTest extends KernelTestCase
 {
-    private const DATE = '-3 day';
+    private const DATE = '-1 day';
     private const CODE = 'USD';
     private const BASE1 = 'AUD';
     private const BASE2 = 'AMD';
@@ -83,6 +83,36 @@ class IndexBaseFeatureTest extends KernelTestCase
                 6,
                 '.',
                 ''
+            )
+        );
+
+        //previous
+        $previousDate = DateDto::create((new DateTime(self::DATE))->modify('-1 day'));
+        $payload = TickerPayloadDto::create(
+            self::CODE,
+            $previousDate,
+            $baseCurrency
+        );
+        $payloadRur = TickerPayloadDto::create(
+            self::CODE,
+            $previousDate
+        );
+        $this->storage->withDate($previousDate);
+        $this->storage->removeTicker(TickerDto::create(self::CODE, '0', 1, $baseCurrency));
+        ($this->preloadFeature)(new RatesPreloadMessage($payload));
+        ($this->featureRur)(new IndexRurMessage($payloadRur));
+        ($this->featureBase)(new IndexBaseMessage($payload));
+        $previousTicker = $this->storage->getTicker(self::CODE, $baseCurrency);
+        self::assertNotNull($previousTicker);
+        $delta = $ticker->getValue() - $previousTicker->getValue();
+        self::assertEquals(
+            number_format(
+                $delta,
+                4
+            ),
+            number_format(
+                $ticker->getDelta(),
+                4
             )
         );
     }

@@ -101,6 +101,10 @@ class IndexBaseFeatureTest extends KernelTestCase
         $this->storage->removeTicker(TickerDto::create(self::CODE, '0', 1, $baseCurrency));
         ($this->preloadFeature)(new RatesPreloadMessage($payload));
         ($this->featureRur)(new IndexRurMessage($payloadRur));
+        $tickerCodeRur = $this->storage->getTicker(self::CODE, TickerDto::DEFAULT_CURRENCY);
+        self::assertNotNull($tickerCodeRur);
+        $tickerBaseRur = $this->storage->getTicker($baseCurrency, TickerDto::DEFAULT_CURRENCY);
+        self::assertNotNull($tickerBaseRur);
         ($this->featureBase)(new IndexBaseMessage($payload));
         $previousTicker = $this->storage->getTicker(self::CODE, $baseCurrency);
         self::assertNotNull($previousTicker);

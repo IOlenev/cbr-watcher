@@ -54,7 +54,19 @@ final class IndexRurFeature
                 continue;
             }
             $tickers[$previousDateTicker->getCharCode()]->computeDelta($previousDateTicker->getValue());
+            $this->storage->withDate($message->payload->getBaseDate());
             $this->storage->putTicker($tickers[$previousDateTicker->getCharCode()]);
+
+            //warm previous date ticker storage (without delta)
+            $this->storage->withDate($message->payload->getPreviousDate());
+            $isExists = $this->storage->getTicker(
+                $previousDateTicker->getCharCode(),
+                TickerDto::DEFAULT_CURRENCY
+            );
+            if (!is_null($isExists)) {
+                continue;
+            }
+            $this->storage->putTicker($previousDateTicker);
         }
     }
 }

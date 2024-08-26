@@ -26,27 +26,19 @@ class IndexController extends AbstractController
     {
         $input = InputDto::create($ticker, $date, $baseCurrency);
         $errors = $this->validator->validate($input);
-        $attempts = count($errors) ? 0 : 3;
         $errors = count($errors)
             ? sprintf('%s - %s', $errors->get(0)->getPropertyPath(), $errors->get(0)->getMessage())
             : '';
 
-        while (--$attempts > 0) {
-            try {
-                $result = $this->tickerService
-                    ->withDate(DateDto::create(new DateTime($input->getDate())))
-                    ->getTicker(
-                        $input->getTicker(),
-                        $input->getBaseCurrency()
-                    );
-            } catch (Throwable $exception) {
-                $errors = $exception->getMessage();
-                break;
-            }
-            if (!is_null($result)) {
-                break;
-            }
-            sleep(2);
+        try {
+            $result = $this->tickerService
+                ->withDate(DateDto::create(new DateTime($input->getDate())))
+                ->getTicker(
+                    $input->getTicker(),
+                    $input->getBaseCurrency()
+                );
+        } catch (Throwable $exception) {
+            $errors = $exception->getMessage();
         }
 
         if (empty($result ??= null) && empty($errors)) {

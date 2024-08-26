@@ -14,6 +14,7 @@ final class CbrRatesParser implements RatesParserInterface
      * @var null|array<int, array{"Nominal": int, "Value": string, "VarChar": string}>
      */
     private ?array $dayRates = null;
+    private ?TickerDto $tickerRur = null;
 
     public function __construct()
     {
@@ -26,10 +27,16 @@ final class CbrRatesParser implements RatesParserInterface
         }
         if ($reset) {
             reset($this->dayRates);
+            $this->tickerRur = null;
         }
 
         $result = current($this->dayRates);
         if (!is_array($result)) {
+            if (is_null($this->tickerRur)) {
+                $this->tickerRur = TickerDto::create(TickerDto::DEFAULT_CURRENCY, '1', 1);
+                $this->tickerRur->computeDelta(1);
+                return $this->tickerRur;
+            }
             return null;
         }
         next($this->dayRates);
@@ -50,6 +57,7 @@ final class CbrRatesParser implements RatesParserInterface
             );
         }
         reset($this->dayRates);
+        $this->tickerRur = null;
         return $this;
     }
 }

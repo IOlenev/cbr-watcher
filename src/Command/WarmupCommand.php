@@ -17,7 +17,7 @@ use Throwable;
 
 #[AsCommand(
     name: 'app:warmup',
-    description: 'Warmup currency rates. Usage: php bin/console app:warmup <ticker> <baseCurrency> (optional, default: RUR)',
+    description: 'Warmup currency rates. Usage: php bin/console app:warmup',
     hidden: false
 )]
 final class WarmupCommand extends Command
@@ -30,38 +30,8 @@ final class WarmupCommand extends Command
         parent::__construct();
     }
 
-    protected function configure(): void
-    {
-        $this
-            ->addArgument(
-                'ticker',
-                InputArgument::REQUIRED,
-                'The currency ticker'
-            )
-            ->addArgument(
-                'baseCurrency',
-                InputArgument::OPTIONAL,
-                'The rate base currency ticker',
-                TickerDto::DEFAULT_CURRENCY
-            );
-    }
-
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $inputParams = InputDto::create(
-            $input->getArgument('ticker'),
-            DateDto::create()->format('Ymd'),
-            $input->getArgument('baseCurrency')
-        );
-
-        $errors = $this->validator->validate($inputParams);
-        if (count($errors) > 0) {
-            $output->writeln(
-                sprintf('%s - %s', $errors->get(0)->getPropertyPath(), $errors->get(0)->getMessage())
-            );
-            return Command::INVALID;
-        }
-
         $date = new DateTime();
         $borderDate = new DateTime(sprintf('-%d day', (int)$this->params->get('days_date_range')));
 

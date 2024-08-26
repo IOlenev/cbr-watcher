@@ -67,6 +67,7 @@ final class IndexRurFeature
                 continue;
             }
             $this->storage->putTicker($previousDateTicker);
+            $this->storage->withDate($message->payload->getBaseDate());
         }
     }
 }

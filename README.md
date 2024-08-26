@@ -27,12 +27,10 @@ Linux, MacOS with Docker and Git installed
      > http://localhost:8800/USD/20240812/AUD
 
 2. Cli
-   - warm up command (getting rates for a 180 days period) `docker exec cbrw-php php bin/console app:warmup [ticker] [base-currency]`
-      > examples:
+   - warm up command (getting rates for a 180 days period) `docker exec cbrw-php php bin/console app:warmup`
+      > example:
       > 
-      > docker exec cbrw-php php bin/console app:warmup USD
-      > 
-      > docker exec cbrw-php php bin/console app:warmup USD AUD
+      > docker exec cbrw-php php bin/console app:warmup
    - get exchange rates by date command `docker exec cbrw-php php bin/console app:get-ticker [ticker] [date] [base-currency]`
      > examples:
      > 

@@ -2,12 +2,17 @@
 
 namespace App\Domain\Storage\Service;
 
+use App\Domain\Rates\Feature\RatesPreloadFeature;
 use App\Domain\Rates\Message\RatesPreloadMessage;
 use App\Domain\Ticker\Dto\TickerDto;
 use App\Domain\Ticker\Dto\TickerPayloadDto;
+use App\Domain\Ticker\Feature\IndexBaseFeature;
+use App\Domain\Ticker\Feature\IndexRurFeature;
+use App\Domain\Ticker\Message\IndexBaseMessage;
+use App\Domain\Ticker\Message\IndexRurMessage;
 use App\Dto\DateDto;
 use LogicException;
-use Symfony\Component\Messenger\MessageBusInterface;
+use RuntimeException;
 
 class TickerService implements TickerServiceInterface
 {
@@ -15,7 +20,9 @@ class TickerService implements TickerServiceInterface
 
     public function __construct(
         private readonly TickerStorageInterface $storage,
-        private readonly MessageBusInterface $bus
+        private readonly RatesPreloadFeature $preloadFeature,
+        private readonly IndexRurFeature $featureRur,
+        private readonly IndexBaseFeature $featureBase
     ) {
     }
 
@@ -28,10 +35,8 @@ class TickerService implements TickerServiceInterface
         }
 
         $this->date = $date;
-        $this->storage->withDate($this->date);
         return $this;
     }
-
 
     public function getTicker(string $charCode, string $baseCurrency): ?TickerDto
     {
@@ -39,14 +44,27 @@ class TickerService implements TickerServiceInterface
             throw new LogicException('Date not specified');
         }
 
-        $ticker = $this->storage->getTicker($charCode, $baseCurrency);
+        $ticker = $this->storage
+            ->withDate($this->date)
+            ->getTicker($charCode, $baseCurrency);
         if (!is_null($ticker?->getDelta())) {
             return $ticker;
         }
 
-        $this->bus->dispatch(new RatesPreloadMessage(
-            TickerPayloadDto::create($charCode, $this->date, $baseCurrency))
-        );
-        return null;
+        $payload = TickerPayloadDto::create($charCode, $this->date, $baseCurrency);
+        $payloadRur = TickerPayloadDto::create($charCode, $this->date);
+        ($this->preloadFeature)(new RatesPreloadMessage($payload));
+        ($this->featureRur)(new IndexRurMessage($payloadRur));
+        if (TickerDto::DEFAULT_CURRENCY !== $baseCurrency) {
+            ($this->featureBase)(new IndexBaseMessage($payload));
+        }
+        $ticker = $this->storage
+            ->withDate($this->date)
+            ->getTicker($charCode, $baseCurrency);
+        if (!is_null($ticker?->getDelta())) {
+            return $ticker;
+        }
+
+        throw new RuntimeException('Unable to get ticker rates');
     }
 }

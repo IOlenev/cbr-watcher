@@ -6,6 +6,7 @@ use App\Domain\Rates\Dto\RatesDto;
 use App\Domain\Rates\Service\RatesParserInterface;
 use App\Domain\Rates\Service\RatesProviderInterface;
 use App\Domain\Ticker\Dto\TickerDto;
+use App\Dto\DateDto;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Throwable;
 
@@ -59,5 +60,22 @@ class RatesParserTest extends KernelTestCase
         self::assertNotNull($ticker2);
 
         self::assertNotEquals($ticker1, $ticker2);
+    }
+
+    /**
+     * @depends testCbrParseTicker
+     */
+    public function testCbrParseTickerRur(): void
+    {
+        $date = DateDto::create();
+        $this->parser->withRates(RatesDto::create($this->provider->getRates($date)));
+        while (
+            $ticker = $this->parser->getNext()
+        ) {
+            $previousTicker = $ticker;
+        }
+        self::assertNotNull($previousTicker);
+        self::assertEquals(TickerDto::DEFAULT_CURRENCY, $previousTicker->getCharCode());
+        self::assertNotNull($previousTicker->getDelta());
     }
 }

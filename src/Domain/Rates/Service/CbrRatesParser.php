@@ -34,7 +34,6 @@ final class CbrRatesParser implements RatesParserInterface
         if (!is_array($result)) {
             if (is_null($this->tickerRur)) {
                 $this->tickerRur = TickerDto::create(TickerDto::DEFAULT_CURRENCY, '1', 1);
-                $this->tickerRur->computeDelta(1);
                 return $this->tickerRur;
             }
             return null;

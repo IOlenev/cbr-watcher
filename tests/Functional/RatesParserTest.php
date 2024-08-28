@@ -76,6 +76,5 @@ class RatesParserTest extends KernelTestCase
         }
         self::assertNotNull($previousTicker);
         self::assertEquals(TickerDto::DEFAULT_CURRENCY, $previousTicker->getCharCode());
-        self::assertNotNull($previousTicker->getDelta());
     }
 }

@@ -17,8 +17,10 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class IndexBaseFeatureTest extends KernelTestCase
 {
-    private const DATE = '-1 day';
-    private const CODE = 'USD';
+    private const DATE1 = '-1 day';
+    private const DATE2 = '-2 day';
+    private const CODE1 = 'USD';
+    private const CODE2 = 'RUR';
     private const BASE1 = 'AUD';
     private const BASE2 = 'AMD';
 
@@ -36,41 +38,50 @@ class IndexBaseFeatureTest extends KernelTestCase
         $this->featureRur = $container->get(IndexRurFeature::class);
         $this->featureBase = $container->get(IndexBaseFeature::class);
         $this->storage = $container->get(TickerStorageInterface::class);
-        $this->storage->withDate(DateDto::create(new DateTime(self::DATE)));
+        $this->storage->withDate(DateDto::create(new DateTime(self::DATE1)));
     }
 
     public function testComputeTicker(): void
     {
-        $this->assertTicker(self::BASE1);
-        $this->assertTicker(self::BASE2);
+        $this->assertTicker(self::CODE1, self::DATE1, self::BASE1);
+        $this->assertTicker(self::CODE1, self::DATE1, self::BASE2);
+        $this->assertTicker(self::CODE2, self::DATE1, self::BASE1);
+        $this->assertTicker(self::CODE2, self::DATE1, self::BASE2);
+        $this->assertTicker(self::CODE2, self::DATE1, self::CODE1);
+
+        $this->assertTicker(self::CODE1, self::DATE2, self::BASE1);
+        $this->assertTicker(self::CODE1, self::DATE2, self::BASE2);
+        $this->assertTicker(self::CODE2, self::DATE2, self::BASE1);
+        $this->assertTicker(self::CODE2, self::DATE2, self::BASE2);
+        $this->assertTicker(self::CODE2, self::DATE2, self::CODE1);
     }
 
-    private function assertTicker(string $baseCurrency): void
+    private function assertTicker(string $ticker, string $date, string $baseCurrency): void
     {
         $payload = TickerPayloadDto::create(
-            self::CODE,
-            DateDto::create(new DateTime(self::DATE)),
+            $ticker,
+            DateDto::create(new DateTime($date)),
             $baseCurrency
         );
         $payloadRur = TickerPayloadDto::create(
-            self::CODE,
-            DateDto::create(new DateTime(self::DATE))
+            $ticker,
+            DateDto::create(new DateTime($date))
         );
 
         $this->storage->removeTicker(
-            TickerDto::create(self::CODE, '0', 1, $baseCurrency)
+            TickerDto::create($ticker, '0', 1, $baseCurrency)
         );
         ($this->preloadFeature)(new RatesPreloadMessage($payload));
         ($this->featureRur)(new IndexRurMessage($payloadRur));
         ($this->featureBase)(new IndexBaseMessage($payload));
-        $tickerCodeRur = $this->storage->getTicker(self::CODE, TickerDto::DEFAULT_CURRENCY);
+        $tickerCodeRur = $this->storage->getTicker($ticker, TickerDto::DEFAULT_CURRENCY);
         self::assertNotNull($tickerCodeRur);
         $tickerBaseRur = $this->storage->getTicker($baseCurrency, TickerDto::DEFAULT_CURRENCY);
         self::assertNotNull($tickerBaseRur);
-        $ticker = $this->storage->getTicker(self::CODE, $baseCurrency);
-        self::assertNotNull($ticker);
-        self::assertEquals(self::CODE, $ticker->getCharCode());
-        self::assertNotNull($ticker->getDelta());
+        $tickerResult = $this->storage->getTicker($ticker, $baseCurrency);
+        self::assertNotNull($tickerResult);
+        self::assertEquals($ticker, $tickerResult->getCharCode());
+        self::assertNotNull($tickerResult->getDelta());
         self::assertEquals(
             number_format(
                 $tickerCodeRur->getValue() * $tickerBaseRur->getKrur(),
@@ -79,7 +90,7 @@ class IndexBaseFeatureTest extends KernelTestCase
                 ''
             ),
             number_format(
-                $ticker->getValue(),
+                $tickerResult->getValue(),
                 6,
                 '.',
                 ''
@@ -87,35 +98,35 @@ class IndexBaseFeatureTest extends KernelTestCase
         );
 
         //previous
-        $previousDate = DateDto::create((new DateTime(self::DATE))->modify('-1 day'));
+        $previousDate = DateDto::create((new DateTime($date))->modify('-1 day'));
         $payload = TickerPayloadDto::create(
-            self::CODE,
+            $ticker,
             $previousDate,
             $baseCurrency
         );
         $payloadRur = TickerPayloadDto::create(
-            self::CODE,
+            $ticker,
             $previousDate
         );
         $this->storage->withDate($previousDate);
-        $this->storage->removeTicker(TickerDto::create(self::CODE, '0', 1, $baseCurrency));
+        $this->storage->removeTicker(TickerDto::create($ticker, '0', 1, $baseCurrency));
         ($this->preloadFeature)(new RatesPreloadMessage($payload));
         ($this->featureRur)(new IndexRurMessage($payloadRur));
-        $tickerCodeRur = $this->storage->getTicker(self::CODE, TickerDto::DEFAULT_CURRENCY);
+        $tickerCodeRur = $this->storage->getTicker($ticker, TickerDto::DEFAULT_CURRENCY);
         self::assertNotNull($tickerCodeRur);
         $tickerBaseRur = $this->storage->getTicker($baseCurrency, TickerDto::DEFAULT_CURRENCY);
         self::assertNotNull($tickerBaseRur);
         ($this->featureBase)(new IndexBaseMessage($payload));
-        $previousTicker = $this->storage->getTicker(self::CODE, $baseCurrency);
+        $previousTicker = $this->storage->getTicker($ticker, $baseCurrency);
         self::assertNotNull($previousTicker);
-        $delta = $ticker->getValue() - $previousTicker->getValue();
+        $delta = $tickerResult->getValue() - $previousTicker->getValue();
         self::assertEquals(
             number_format(
                 $delta,
                 4
             ),
             number_format(
-                $ticker->getDelta(),
+                $tickerResult->getDelta(),
                 4
             )
         );

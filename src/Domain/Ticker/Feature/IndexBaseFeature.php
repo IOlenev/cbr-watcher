@@ -68,7 +68,6 @@ final class IndexBaseFeature
             $message->payload->getTicker()->getBaseCurrency(),
             TickerDto::DEFAULT_CURRENCY
         );
-        $this->storage->withDate($message->payload->getBaseDate());
         while ($previousDateTicker = $this->parser->getNext()) {
             if (!isset($tickers[$previousDateTicker->getCharCode()])) {
                 continue;
@@ -76,6 +75,7 @@ final class IndexBaseFeature
             $tickers[$previousDateTicker->getCharCode()]->computeDelta(
                 $previousDateTicker->getValue() * $tickerRur->getKrur()
             );
+            $this->storage->withDate($message->payload->getBaseDate());
             $this->storage->putTicker($tickers[$previousDateTicker->getCharCode()]);
         }
     }

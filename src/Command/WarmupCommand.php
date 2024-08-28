@@ -1,19 +1,21 @@
 <?php
 namespace App\Command;
 
-use App\Domain\Storage\Service\TickerServiceInterface;
+use App\Domain\Rates\Dto\RatesDto;
+use App\Domain\Rates\Feature\RatesPreloadFeature;
+use App\Domain\Rates\Message\RatesPreloadMessage;
+use App\Domain\Rates\Service\RatesParserInterface;
+use App\Domain\Rates\Service\RatesProviderInterface;
 use App\Domain\Ticker\Dto\TickerDto;
+use App\Domain\Ticker\Dto\TickerPayloadDto;
 use App\Dto\DateDto;
-use App\Dto\InputDto;
 use DateTime;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Throwable;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 #[AsCommand(
     name: 'app:warmup',
@@ -23,9 +25,11 @@ use Throwable;
 final class WarmupCommand extends Command
 {
     public function __construct(
-        private readonly TickerServiceInterface $tickerService,
-        private readonly ValidatorInterface $validator,
-        private ParameterBagInterface $params
+        private readonly ParameterBagInterface $params,
+        private readonly MessageBusInterface $bus,
+        private readonly RatesParserInterface $parser,
+        private readonly RatesProviderInterface $provider,
+        private readonly RatesPreloadFeature $preloadFeature
     ) {
         parent::__construct();
     }
@@ -33,15 +37,34 @@ final class WarmupCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $date = new DateTime();
-        $borderDate = new DateTime(sprintf('-%d day', (int)$this->params->get('days_date_range')));
+        $days = (int)$this->params->get('days_date_range');
+        $borderDate = new DateTime(sprintf('-%d day', $days));
 
+        $payload = TickerPayloadDto::create(TickerDto::DEFAULT_CURRENCY, DateDto::create($date));
+        ($this->preloadFeature)(new RatesPreloadMessage($payload));
+        $this->parser->withRates(RatesDto::create(
+            $this->provider->getRates($payload->getBaseDate())
+        ));
+        $tickers = [];
+        while ($ticker = $this->parser->getNext()) {
+            $tickers[] = $ticker->getCharCode();
+        }
+
+        $section = $output->section();
+        $section->setMaxHeight(1);
+        $total = (count($tickers) ** 2) * $days;
+        $i = 1;
         while ($date > $borderDate) {
-            $this->tickerService->withDate(DateDto::create($date));
-            try {
-                $this->tickerService->getTicker($inputParams->getTicker(), $inputParams->getBaseCurrency());
-            } catch (Throwable $exception) {
-                $output->writeln('Error: ' . $exception->getMessage());
-                return Command::FAILURE;
+            foreach ($tickers as $ticker) {
+                foreach ($tickers as $baseTicker) {
+                    $this->bus->dispatch(new RatesPreloadMessage(
+                        TickerPayloadDto::create($ticker, DateDto::create($date), $baseTicker)
+                    ));
+                    $section->overwrite(
+                        sprintf('Processed %d of %d (%d %%)', $i, $total, $i++ / $total * 100)
+                    );
+                    //$output->writeln(sprintf('Warming for %s/%s %s launched', $ticker, $baseTicker, $date->format('Y-m-d')));
+                }
             }
             $date->modify('-1 day');
         }

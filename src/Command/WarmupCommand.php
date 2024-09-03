@@ -4,6 +4,7 @@ namespace App\Command;
 use App\Domain\Rates\Dto\RatesDto;
 use App\Domain\Rates\Feature\RatesPreloadFeature;
 use App\Domain\Rates\Message\RatesPreloadMessage;
+use App\Domain\Rates\Message\WarmupDateMessage;
 use App\Domain\Rates\Service\RatesParserInterface;
 use App\Domain\Rates\Service\RatesProviderInterface;
 use App\Domain\Ticker\Dto\TickerDto;
@@ -52,20 +53,14 @@ final class WarmupCommand extends Command
 
         $section = $output->section();
         $section->setMaxHeight(1);
-        $total = (count($tickers) ** 2) * $days;
+        $total = $days;
         $i = 1;
         while ($date > $borderDate) {
-            foreach ($tickers as $ticker) {
-                foreach ($tickers as $baseTicker) {
-                    $this->bus->dispatch(new RatesPreloadMessage(
-                        TickerPayloadDto::create($ticker, DateDto::create($date), $baseTicker)
-                    ));
-                    $section->overwrite(
-                        sprintf('Processed %d of %d (%d %%)', $i, $total, $i++ / $total * 100)
-                    );
-                    //$output->writeln(sprintf('Warming for %s/%s %s launched', $ticker, $baseTicker, $date->format('Y-m-d')));
-                }
-            }
+            $this->bus->dispatch(new WarmupDateMessage(DateDto::create($date), $tickers));
+// works in right way inside container only
+//            $section->overwrite(
+//                sprintf('Processed %d of %d (%d %%)', $i, $total, $i++ / $total * 100)
+//            );
             $date->modify('-1 day');
         }
         $output->writeln('Done. Warmed up to ' . $borderDate->modify('1 day')->format('Y-m-d'));

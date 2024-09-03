@@ -30,7 +30,7 @@ class TickerService implements TickerServiceInterface
     {
         $date ??= DateDto::create();
 
-        if (!strcmp($date, $this->date)) { //if equal
+        if (!is_null($this->date) && !strcmp($date, $this->date)) { //if equal
             return $this;
         }
 

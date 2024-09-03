@@ -8,6 +8,8 @@ framework:
 
         transports:
             # https://symfony.com/doc/current/messenger.html#transport-configuration
+            warmup_date:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%/warmup_date/symfony/consumer-%env(CONSUMER_ID)%?auto_setup=true'
             rates_preload:
                 dsn: '%env(MESSENGER_TRANSPORT_DSN)%/rates_preload/symfony/consumer-%env(CONSUMER_ID)%?auto_setup=true'
             index_rur:
@@ -16,6 +18,7 @@ framework:
                 dsn: '%env(MESSENGER_TRANSPORT_DSN)%/index_base/symfony/consumer-%env(CONSUMER_ID)%?auto_setup=true'
 
         routing:
+            'App\Domain\Rates\Message\WarmupDateMessage': warmup_date
             'App\Domain\Rates\Message\RatesPreloadMessage': rates_preload
             'App\Domain\Ticker\Message\IndexRurMessage': index_rur
             'App\Domain\Ticker\Message\IndexBaseMessage': index_base
